@@ -59,7 +59,10 @@
     const logDebug = (text) => { _log(text, 'color:grey'); console.log(text); }
     const logInfo = (text) => { _log(text, 'color:black'); console.info(text); }
     const logWarn = (text) => { _log(text, 'color:blue'); console.warn(text); }
-    const logError = (text) => { _log(`${text}`, 'color:red'); console.error(text); }
+    const logError = (text, e) => {
+        _log(`${text}`+(e ? `<br\>[Error: name=${e.name}; code=${e.code}; message='${e.message}']` : ''), 'color:red');
+        console.error(text, e);
+    }
 </script>
 <script>
 if('serviceWorker' in navigator) {
@@ -113,7 +116,7 @@ if('serviceWorker' in navigator) {
             blob = await loadResourceAsBlob(BLOB_URL)
         }
         catch (e) {
-            logError(`Failed loading resource: ${e}`)
+            logError(`Failed loading resource: ${e}`, e)
             return false
         }
         $labelBlobSize.innerHTML = `${blob.size} bytes`
@@ -133,7 +136,7 @@ if('serviceWorker' in navigator) {
             logInfo("Done")
         }
         catch (e) {
-            logError(`Failed opening IndexedDB: ${e}`)
+            logError(`Failed opening IndexedDB: ${e}`, e)
             return false
         }
 
@@ -153,7 +156,7 @@ if('serviceWorker' in navigator) {
                 logInfo("Done")
             }
             catch (e) {
-                logError(`Failed closing IndexedDB: ${e}`)
+                logError(`Failed closing IndexedDB: ${e}`, e)
                 return false
             }
             finally {
@@ -171,7 +174,7 @@ if('serviceWorker' in navigator) {
                 return true
             }
             catch (e) {
-                logError(`Failed estimating storage: ${e}`)
+                logError(`Failed estimating storage: ${e}`, e)
             }
         }
         return false
@@ -190,7 +193,7 @@ if('serviceWorker' in navigator) {
         }
         catch (e) {
             $labelItemCount.innerHTML = "?"
-            logError(`Failed counting items in store: ${e}`)
+            logError(`Failed counting items in store: ${e}`, e)
             return false
         }
 
@@ -207,7 +210,7 @@ if('serviceWorker' in navigator) {
             logInfo("Done")
         }
         catch (e) {
-            logError(`Failed deleting IndexedDB: ${e}`)
+            logError(`Failed deleting IndexedDB: ${e}`, e)
             return false
         }
         return true
@@ -249,7 +252,7 @@ if('serviceWorker' in navigator) {
                 await db.add(STORE_NAME, obj, key)
             }
             catch (e) {
-                logError(`Failed adding item with key '${key}': ${e}`)
+                logError(`Failed adding item with key '${key}': ${e}`, e)
                 break
             }
             if (useLiveCounting) {
@@ -279,7 +282,7 @@ if('serviceWorker' in navigator) {
             logInfo(`Got ${keys.length} keys`)
         }
         catch (e) {
-            logError(`Failed querying keys: ${e}`)
+            logError(`Failed querying keys: ${e}`, e)
             return
         }
 
@@ -295,7 +298,7 @@ if('serviceWorker' in navigator) {
                 await db.delete(STORE_NAME, key)
             }
             catch (e) {
-                logError(`Failed deleting item with key '${key}': ${e}`)
+                logError(`Failed deleting item with key '${key}': ${e}`, e)
                 break
             }
 
@@ -326,7 +329,7 @@ if('serviceWorker' in navigator) {
             logInfo(`Got ${keys.length} keys`)
         }
         catch (e) {
-            logError(`Failed querying keys: ${e}`)
+            logError(`Failed querying keys: ${e}`, e)
             return
         }
 
@@ -352,7 +355,7 @@ if('serviceWorker' in navigator) {
                 i++
             }
             catch (e) {
-                logError(`Failed replacing item with key '${key}': ${e}`)
+                logError(`Failed replacing item with key '${key}': ${e}`, e)
                 break
             }
         }
@@ -401,7 +404,7 @@ if('serviceWorker' in navigator) {
             logInfo("Done")
         }
         catch (e) {
-            logError(`Failed clearing store: ${e}`)
+            logError(`Failed clearing store: ${e}`, e)
         }
         await refreshCount()
         await refreshEstimate()
