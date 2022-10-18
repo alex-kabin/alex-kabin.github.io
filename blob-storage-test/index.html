@@ -1,0 +1,422 @@
+<html xmlns="http://www.w3.org/1999/html">
+<head>
+	<link rel="manifest" href="manifest.json" />
+    <title>Blob storage test</title>
+</head>
+<body style="margin: 5%">
+
+<h2>Blob storage test</h2>
+<div>Blob size in bytes: <span id="labelBlobSize"></span></div>
+<div>Total items in store: <span id="labelItemCount"></span></div>
+<br/>
+<div>Estimate: <span id="labelEstimate"></span></div>
+<div style="margin-top: 12px;">
+    <button id="buttonAdd0" onclick="add(10)">Add 10</button>
+    <button id="buttonAdd1" onclick="add(100)">Add 100</button>
+    <button id="buttonAdd2" onclick="add(1000)">Add 1000</button>
+    &nbsp | &nbsp
+    <button id="buttonRemove0" onclick="remove(10)">Remove 10</button>
+    <button id="buttonRemove1" onclick="remove(100)">Remove 100</button>
+    <button id="buttonRemove2" onclick="remove(1000)">Remove 1000</button>
+    &nbsp | &nbsp
+    <button id="buttonReplace1" style="color: green" onclick="replace(100)">Replace 100</button>
+    <button id="buttonReplace2" style="color: green" onclick="replace(1000)">Replace 1000</button>
+    &nbsp | &nbsp
+    <button id="buttonRefresh" style="color: magenta" onclick="refresh()">Refresh</button>
+    &nbsp | &nbsp
+    <button id="buttonClear" style="color: blue" onclick="clearStore()">Clear store</button>
+    &nbsp | &nbsp
+    <button id="buttonStop" onclick="stop()">Stop</button>
+    &nbsp | &nbsp
+    <button id="buttonOpen" onclick="openDb()">Open DB</button>
+    <button id="buttonClose" onclick="closeDb()">Close DB</button>
+    <button id="buttonDrop" style="color: red" onclick="recreateDb()">Recreate DB</button>
+    <br/>
+    <input id="checkCounting" type="checkbox" onchange="toggleCounting(this.checked)" /><label for="checkCounting">Count while updating</label>
+</div>
+<div id="textLog" style="margin-top: 12px; padding: 2px; border: 1px dashed grey; height: 60%; overflow: scroll">
+</div>
+
+<script>
+    const $labelBlobSize = document.getElementById("labelBlobSize")
+    const $labelItemCount = document.getElementById("labelItemCount")
+    const $labelEstimate = document.getElementById("labelEstimate")
+    const $buttonAdd1 = document.getElementById("buttonAdd1")
+    const $buttonAdd2 = document.getElementById("buttonAdd2")
+    const $buttonRemove1 = document.getElementById("buttonRemove1")
+    const $buttonRemove2 = document.getElementById("buttonRemove2")
+    const $buttonDrop = document.getElementById("buttonDrop")
+    const $buttonStop = document.getElementById("buttonStop")
+    const $buttonClear = document.getElementById("buttonClear")
+</script>
+<script>
+    const $textLog = document.getElementById("textLog")
+    function _log(text, style) {
+        $textLog.innerHTML += `<span style="${style}">${text}</span><br/>`
+        $textLog.scroll(0, $textLog.scrollHeight)
+    }
+
+    const logDebug = (text) => { _log(text, 'color:grey'); console.log(text); }
+    const logInfo = (text) => { _log(text, 'color:black'); console.info(text); }
+    const logWarn = (text) => { _log(text, 'color:blue'); console.warn(text); }
+    const logError = (text) => { _log(`${text}`, 'color:red'); console.error(text); }
+</script>
+<script>
+if('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js')
+    logInfo("ServiceWorker registered")
+}
+</script>
+
+<script src="idb.js"></script>
+
+<script>
+    const DB_NAME = '_blobs'
+    const STORE_NAME = 'images'
+    const BLOB_SIZE = 5*1024*1024
+    const BLOB_URL = 'photo.jpg'
+
+    function makeBlob() {
+        const buf = new ArrayBuffer(BLOB_SIZE)
+        const arr = new Int8Array(buf)
+        for (let i=0; i<20; i++) {
+            arr[Math.floor(BLOB_SIZE*Math.random())] = Math.floor(256 * Math.random())
+        }
+        return new Blob([buf], { type: "image/jpg" })
+    }
+
+    async function loadResourceAsBlob(name) {
+        const request = new Request(name)
+        const response = await fetch(request)
+        return await response.blob()
+    }
+
+    async function connectDb(name) {
+        logDebug('connectDb()')
+        const db = await idb.openDB(name, 1, {
+            upgrade(db, oldVersion, newVersion, transaction) {
+                logWarn(`Upgrading DB version ${oldVersion} => ${newVersion}`)
+                db.createObjectStore(STORE_NAME)
+            }
+        })
+        return db
+    }
+
+    let blob
+    let db
+    let count
+    let stopper = null
+    let useLiveCounting = false
+
+    async function loadBlob() {
+        try {
+            blob = await loadResourceAsBlob(BLOB_URL)
+        }
+        catch (e) {
+            logError(`Failed loading resource: ${e}`)
+            return false
+        }
+        $labelBlobSize.innerHTML = `${blob.size} bytes`
+        return true
+    }
+
+    async function openDb() {
+        logDebug('openDb()')
+        if (db != null) {
+            logError(`IndexedDB already initialized`)
+            return false
+        }
+
+        try {
+            logInfo("Opening DB...")
+            db = await connectDb(DB_NAME)
+            logInfo("Done")
+        }
+        catch (e) {
+            logError(`Failed opening IndexedDB: ${e}`)
+            return false
+        }
+
+        if (!await refreshCount()) {
+            return false
+        }
+
+        return true
+    }
+
+    async function closeDb() {
+        logDebug("closeDb()")
+        if (db) {
+            try {
+                logInfo("Closing DB connection...")
+                await db.close()
+                logInfo("Done")
+            }
+            catch (e) {
+                logError(`Failed closing IndexedDB: ${e}`)
+                return false
+            }
+            finally {
+                db = null
+                $labelItemCount.innerHTML = "?"
+            }
+        }
+    }
+
+    async function refreshEstimate() {
+        if (navigator.storage?.estimate) {
+            try {
+                const est = await navigator.storage.estimate()
+                $labelEstimate.innerHTML = `<span style="color:magenta">${JSON.stringify(est)}</span>`
+                return true
+            }
+            catch (e) {
+                logError(`Failed estimating storage: ${e}`)
+            }
+        }
+        return false
+    }
+
+    async function refreshCount() {
+        if (!checkDb()) {
+            $labelItemCount.innerHTML = "?"
+            count = 0
+            return false
+        }
+
+        try {
+            count = await db.count(STORE_NAME)
+            $labelItemCount.innerHTML = `${count}`
+        }
+        catch (e) {
+            $labelItemCount.innerHTML = "?"
+            logError(`Failed counting items in store: ${e}`)
+            return false
+        }
+
+        return true
+    }
+
+    async function dropDb(name) {
+        logDebug(`dropDb(${name})`)
+        await closeDb()
+        try {
+            logInfo("Deleting DB...")
+            await idb.deleteDB(name)
+            $labelItemCount.innerHTML = '?'
+            logInfo("Done")
+        }
+        catch (e) {
+            logError(`Failed deleting IndexedDB: ${e}`)
+            return false
+        }
+        return true
+    }
+
+    function checkDb() {
+        if (db == null) {
+            logError(`IndexedDB not ready`)
+            return false
+        }
+        //logInfo("DB ready")
+        return true
+    }
+
+    async function add(n) {
+        logDebug(`add(${n})`)
+        if (!checkDb()) {
+            return
+        }
+
+        await refreshCount()
+
+        const beforeCount = count
+        let now = Date.now()
+        logInfo("Adding items...")
+        stopper = {}
+        let i
+        for (i=1; i<=n; i++) {
+            if (stopper?.cancel) {
+                break
+            }
+            const key = `${now}-${i}`
+            const obj = {
+                timestamp: Date.now(),
+                content: makeBlob(),
+                index: i
+            }
+            try {
+                await db.add(STORE_NAME, obj, key)
+            }
+            catch (e) {
+                logError(`Failed adding item with key '${key}': ${e}`)
+                break
+            }
+            if (useLiveCounting) {
+                await refreshCount()
+            }
+        }
+        stopper = null
+
+        await refreshCount()
+        await refreshEstimate()
+
+        logInfo(`Added ${count - beforeCount} items`)
+    }
+
+    async function remove(n) {
+        logDebug(`remove(${n})`)
+        if (!checkDb()) {
+            return
+        }
+
+        await refreshCount()
+
+        let keys
+        try {
+            logInfo("Requesting store keys")
+            keys = await db.getAllKeys(STORE_NAME, null, n)
+            logInfo(`Got ${keys.length} keys`)
+        }
+        catch (e) {
+            logError(`Failed querying keys: ${e}`)
+            return
+        }
+
+        const beforeCount = count
+        logInfo("Removing items...")
+        stopper = {}
+        for (const key of keys) {
+            if (stopper?.cancel) {
+                break
+            }
+
+            try {
+                await db.delete(STORE_NAME, key)
+            }
+            catch (e) {
+                logError(`Failed deleting item with key '${key}': ${e}`)
+                break
+            }
+
+            if (useLiveCounting) {
+                await refreshCount()
+            }
+        }
+        stopper = null
+
+        await refreshCount()
+        await refreshEstimate()
+
+        logInfo(`Removed ${beforeCount-count} items`)
+    }
+
+    async function replace(n) {
+        logDebug(`replace(${n})`)
+        if (!checkDb()) {
+            return
+        }
+
+        await refreshCount()
+
+        let keys
+        try {
+            logInfo("Requesting store keys")
+            keys = await db.getAllKeys(STORE_NAME, null, n)
+            logInfo(`Got ${keys.length} keys`)
+        }
+        catch (e) {
+            logError(`Failed querying keys: ${e}`)
+            return
+        }
+
+        if (keys.length === 0) {
+            logWarn("Store is empty - nothing to replace")
+            return
+        }
+
+        logInfo("Replacing items...")
+        stopper = {}
+        let i = 0
+        for (let key of keys) {
+            if (stopper?.cancel) {
+                break
+            }
+            const obj = {
+                timestamp: Date.now(),
+                content: makeBlob(),
+                index: i+1
+            }
+            try {
+                await db.put(STORE_NAME, obj, key)
+                i++
+            }
+            catch (e) {
+                logError(`Failed replacing item with key '${key}': ${e}`)
+                break
+            }
+        }
+        stopper = null
+
+        logInfo(`Replaced ${i} items`)
+
+        await refreshCount()
+        await refreshEstimate()
+    }
+
+    function toggleCounting(val) {
+        useLiveCounting = val
+    }
+
+    function stop() {
+        if (stopper) {
+            logInfo("stopping")
+            stopper.cancel = true
+        }
+    }
+
+    async function refresh() {
+        logDebug(`refresh()`)
+        await refreshCount()
+        await refreshEstimate()
+    }
+
+    async function recreateDb() {
+        logDebug(`recreateDb()`)
+        if (await dropDb(DB_NAME)) {
+            logWarn("IndexedDB deleted!")
+            await openDb()
+        }
+        await refreshEstimate()
+    }
+
+    async function clearStore() {
+        logDebug("clearStore()")
+        if (!checkDb()) {
+            return
+        }
+        try {
+            logInfo("Clearing store...")
+            await db.clear(STORE_NAME)
+            logInfo("Done")
+        }
+        catch (e) {
+            logError(`Failed clearing store: ${e}`)
+        }
+        await refreshCount()
+        await refreshEstimate()
+    }
+
+    window.onload = async function() {
+        if (!await refreshEstimate()) {
+            $labelEstimate.innerHTML = "<span style='color: red'>Not supported!</span>"
+        }
+
+        $labelBlobSize.innerHTML = `${BLOB_SIZE} bytes`
+
+        const ready = await openDb()
+        logDebug(`ready = ${ready}`)
+    }
+</script>
+</body>
+</html>
