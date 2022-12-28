@@ -68,27 +68,13 @@
             text-shadow:
                 0 0 4px #fff,
                 0 0 60px #fff200,
-                0 0 100px #fff200,
-                0 0 150px #fff200;
-        }
-
-        .star-effect {
-            animation: grow 0.7s ease-in-out infinite alternate;
-        }
-
-        @keyframes grow {
-            0% {
-                rotate: 0 1 0 0;
-            }
-            100% {
-                rotate: 0 1 0 90deg;
-            }
+                0 0 100px #fff200
         }
 
         .neon-text-flicker-1 {
             color: #fff;
             font-weight: 200;
-            animation: flicker-1 1.5s infinite alternate;
+            animation: flicker-1 2.1s infinite alternate;
         }
 
         @keyframes flicker-1 {
@@ -97,7 +83,6 @@
                     0 0 4px #fff,
                     0 0 10px #fff,
                     0 0 40px #f09,
-                    0 0 50px #f09,
                     0 0 60px #f09,
                     0 0 80px #f09,
                     0 0 90px #f09,
@@ -112,7 +97,7 @@
         .neon-text-flicker-2 {
             color: #fff;
             font-weight: 200;
-            animation: flicker-2 1.3s infinite alternate;
+            animation: flicker-2 2.2s infinite alternate;
         }
 
         @keyframes flicker-2 {
@@ -121,7 +106,6 @@
                         0 0 4px #fff,
                         0 0 10px #fff,
                         0 0 40px #00FFD9,
-                        0 0 50px #00FFD9,
                         0 0 60px #00FFD9,
                         0 0 80px #00FFD9,
                         0 0 90px #00FFD9,
@@ -143,33 +127,33 @@
 
         .ball-1 {
             color: #fff200;
-            text-shadow: 0 0 30px #fff200;
+            text-shadow: 0 0 35px #fff200;
         }
         .ball-2 {
             color: #ff0044;
-            text-shadow: 0 0 30px #ff0044;
+            text-shadow: 0 0 35px #ff0044;
         }
         .ball-3 {
             color: #00B2FF;
-            text-shadow: 0 0 30px #00B2FF;
+            text-shadow: 0 0 35px #00B2FF;
         }
         .ball-4 {
             color: #DD00FF;
-            text-shadow: 0 0 30px #DD00FF;
+            text-shadow: 0 0 35px #DD00FF;
         }
         .ball-5 {
             color: #00ff15;
-            text-shadow: 0 0 30px #00ff15;
+            text-shadow: 0 0 35px #00ff15;
         }
         .ball-6 {
             color: #ffffff;
-            text-shadow: 0 0 30px #ffffff;
+            text-shadow: 0 0 35px #ffffff;
         }
 
         .wish {
             pointer-events: none;
             font-size: 1rem;
-            font-weight: 500;
+            font-weight: 400;
             color: white;
             /*text-shadow: 0 0 30px #ffffff;*/
             white-space: nowrap;
@@ -177,7 +161,7 @@
             /*top: 50%;*/
             /*left: 50%;*/
             transform: translate(-50%, -50%);
-            animation: grow-away 1.2s;
+            animation: grow-away 1.4s;
         }
         @keyframes grow-away {
             0% {
@@ -290,7 +274,7 @@
     }
 
     function lightStar() {
-        $tree.querySelector('#star').classList.add('star-glow', 'star-effect');
+        $tree.querySelector('#star').classList.add('star-glow');
     }
 
     function lightTree() {
