@@ -160,14 +160,14 @@
             color: #b7183c;
             font-size: 2.9rem;
             transform: translate(-50%, 0%);
-            animation: grow-font 0.6s alternate-reverse;
+            animation: grow-font 0.5s alternate-reverse;
         }
 
         .cat {
             font-size: 3.1rem;
             color: #999999;
             transform: translate(-50%, 0%);
-            animation: grow-font 0.6s alternate-reverse;
+            animation: grow-font 0.5s alternate-reverse;
         }
 
         .ball {
@@ -418,17 +418,16 @@
 
     async function light() {
         document.getElementById('control').classList.add('d-none');
-        await delay(800);
         lightTree();
-        await delay(800);
+        await delay(600);
         lightStar();
-        await delay(800);
-        lightBalls();
-        await delay(200);
+        await delay(600);
         $tree.appendChild(makeGift($tree));
-        await delay(200);
+        await delay(500);
         $tree.appendChild(makeCat($tree));
-        await delay(200);
+        await delay(500);
+        lightBalls();
+        await delay(300);
         lightBanner();
         await delay(300);
         document.getElementById('year').classList.remove('d-none');
