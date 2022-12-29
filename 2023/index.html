@@ -73,6 +73,20 @@
                 0 0 100px #fff200
         }
 
+        .neon-text-1 {
+            color: #fff;
+            font-weight: 200;
+            text-shadow:
+                0 0 4px #fff,
+                0 0 10px #fff,
+                0 0 40px #f09,
+                0 0 60px #f09,
+                0 0 80px #f09,
+                0 0 90px #f09,
+                0 0 100px #f09,
+                0 0 150px #f09;
+        }
+
         .neon-text-flicker-1 {
             color: #fff;
             font-weight: 200;
@@ -94,6 +108,20 @@
             20%, 24%, 55% {
                 text-shadow: none;
             }
+        }
+
+        .neon-text-2 {
+            color: #fff;
+            font-weight: 200;
+            text-shadow:
+                0 0 4px #fff,
+                0 0 10px #fff,
+                0 0 40px #00FFD9,
+                0 0 60px #00FFD9,
+                0 0 80px #00FFD9,
+                0 0 90px #00FFD9,
+                0 0 100px #00FFD9,
+                0 0 150px #00FFD9;
         }
 
         .neon-text-flicker-2 {
@@ -129,27 +157,27 @@
 
         .ball-1 {
             color: #fff200;
-            /*text-shadow: 0 0 35px #fff200;*/
+            text-shadow: 0 0 35px #fff200;
         }
         .ball-2 {
             color: #ff0044;
-            /*text-shadow: 0 0 35px #ff0044;*/
+            text-shadow: 0 0 35px #ff0044;
         }
         .ball-3 {
             color: #00B2FF;
-            /*text-shadow: 0 0 35px #00B2FF;*/
+            text-shadow: 0 0 35px #00B2FF;
         }
         .ball-4 {
             color: #DD00FF;
-            /*text-shadow: 0 0 35px #DD00FF;*/
+            text-shadow: 0 0 35px #DD00FF;
         }
         .ball-5 {
             color: #00ff15;
-            /*text-shadow: 0 0 35px #00ff15;*/
+            text-shadow: 0 0 35px #00ff15;
         }
         .ball-6 {
             color: #ffffff;
-            /*text-shadow: 0 0 35px #ffffff;*/
+            text-shadow: 0 0 35px #ffffff;
         }
 
         .wish {
@@ -181,10 +209,10 @@
     </style>
 </head>
 <body>
-<div id="banner" class="banner invisible">С НОВЫМ<br/>ГОДОМ!</div>
+<div id="banner" class="neon-text-1 invisible">С НОВЫМ<br/>ГОДОМ!</div>
 <div id="tree"></div>
 <div id="bottom" style="min-height: 15%">
-    <div id="year" class="d-none neon-text-flicker-2">2023</div>
+    <div id="year" class="d-none neon-text-2">2023</div>
     <div id="control" class="vstack align-items-center gap-1">
         <div class="fs-4" style="color:white">Раз, два, три...</div>
         <button type="button" class="btn btn-primary" onclick="light()">Enable Button Tree</button>
@@ -272,7 +300,6 @@
     function lightBanner() {
         const banner = document.getElementById('banner');
         banner.classList.remove('invisible');
-        banner.classList.add('neon-text-flicker-1');
     }
 
     function lightStar() {
