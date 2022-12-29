@@ -87,13 +87,13 @@
                 0 0 150px #f09;
         }
 
-        .neon-text-flicker-1 {
-            color: #fff;
-            font-weight: 200;
-            animation: flicker-1 2.1s infinite alternate;
+        @media not (any-pointer:coarse) {
+            .neon-text-1 {
+                animation: neon-flicker-1 2100ms infinite alternate;
+            }
         }
 
-        @keyframes flicker-1 {
+        @keyframes neon-flicker-1 {
             0%, 18%, 22%, 25%, 53%, 57%, 100% {
                 text-shadow:
                     0 0 4px #fff,
@@ -123,13 +123,13 @@
                 0 0 100px #00FFD9;
         }
 
-        .neon-text-flicker-2 {
-            color: #fff;
-            font-weight: 200;
-            animation: flicker-2 2.2s infinite alternate;
+        @media not (any-pointer:coarse) {
+            .neon-text-2 {
+                animation: neon-flicker-2 1900ms infinite alternate;
+            }
         }
 
-        @keyframes flicker-2 {
+        @keyframes neon-flicker-2 {
             0%, 18%, 22%, 25%, 53%, 57%, 100% {
                 text-shadow:
                         0 0 4px #fff,
@@ -240,6 +240,9 @@
     </div>
 </div>
 <script>
+    const isMobile = window.matchMedia("(any-pointer:coarse)").matches;
+    console.log('isMobile=', isMobile);
+
     // utils
     function random(min, max) {
         return Math.round(min + (max-min)*Math.random());
@@ -357,6 +360,10 @@
     const effects = [ballsSequenceLightEffect, ballsRowCycleLightEffect, ballsRandomAllLightEffect, ballsRandomRowLightEffect];
     const nextEffect = pickCycle(effects);
 
+    const switcher = {
+        off: false
+    }
+
     function lightBalls() {
         let timer = nextEffect()();
         setInterval(() => {
@@ -367,6 +374,7 @@
 
     function ballsSequenceLightEffect() {
         return setInterval(() => {
+            if (switcher.off) return;
             const ball = nextBall();
             $tree.querySelectorAll('.ball').forEach(b => {
                 b.classList.remove(...balls);
@@ -377,6 +385,7 @@
 
     function ballsRandomAllLightEffect() {
         return setInterval(() => {
+            if (switcher.off) return;
             $tree.querySelectorAll('.ball').forEach(b => {
                 b.classList.remove(...balls);
                 b.classList.add(pickRandom(balls))
@@ -386,6 +395,7 @@
 
     function ballsRandomRowLightEffect() {
         return setInterval(() => {
+            if (switcher.off) return;
             $tree.querySelectorAll('.tree-row').forEach(r => {
                 const c = pickRandom(balls);
                 r.querySelectorAll('.ball').forEach(b => {
@@ -398,6 +408,7 @@
 
     function ballsRowCycleLightEffect() {
         return setInterval(() => {
+            if (switcher.off) return;
             $tree.querySelectorAll('.tree-row').forEach((r, i) => {
                 const ball = nextBall();
                 r.querySelectorAll('.ball').forEach(b => {
@@ -414,7 +425,15 @@
         el.innerHTML = text;
         el.style.top = `${y}px`;
         el.style.left = `${x}px`;
-        el.onanimationend = () => document.body.removeChild(el);
+        el.onanimationend = () => {
+            document.body.removeChild(el);
+            if (isMobile) {
+                switcher.off = false;
+            }
+        }
+        if (isMobile) {
+            switcher.off = true;
+        }
         document.body.appendChild(el);
     }
 
