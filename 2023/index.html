@@ -157,15 +157,15 @@
         }
 
         .gift {
-            color: #b7183c;
+            color: #cc234d;
             font-size: 2.9rem;
             transform: translate(-50%, 0%);
             animation: grow-font 0.5s alternate-reverse;
         }
 
         .cat {
-            font-size: 3.1rem;
-            color: #999999;
+            font-size: 3.2rem;
+            color: #cccccc;
             transform: translate(-50%, 0%);
             animation: grow-font 0.5s alternate-reverse;
         }
@@ -201,7 +201,7 @@
 
         .wish {
             pointer-events: none;
-            font-size: 1rem;
+            font-size: 2rem;
             font-weight: 400;
             color: white;
             /*text-shadow: 0 0 30px #ffffff;*/
@@ -209,20 +209,22 @@
             position: absolute;
             /*top: 50%;*/
             /*left: 50%;*/
+            transform-origin: 0 0;
             transform: translate(-50%, -50%);
-            animation: grow-away 1.4s;
+            animation: grow-wish 1100ms;
+            padding: 0 1rem;
+            background: #953d9b;
+            border-radius: 2rem;
         }
-        @keyframes grow-away {
+        @keyframes grow-wish {
             0% {
-                font-size: 1rem;
-                opacity: 1;
+                scale: 0;
             }
             50% {
-                opacity: 0.7;
+                scale: 1;
             }
             100% {
-                font-size: 9rem;
-                opacity: 0;
+                scale: 0;
             }
         }
     </style>
@@ -265,12 +267,12 @@
     }
 </script>
 <script>
-    const labels = ['OK', 'YES', 'NEXT', 'RUN', 'НЕТ', 'ДА'];
+    const labels = ['OK', 'YES', 'NEXT', 'RUN', 'ДА'];
     const icons = ['fa-circle', 'fa-question-circle', 'fa-exclamation-circle', 'fa-minus-circle', 'fa-plus-circle', 'fa-check-circle', 'fa-times-circle'];
     const balls = [1,2,3,4,5,6].map(i => `ball-${i}`);
     const nextBall = pickCycle(balls);
     const wishes = [
-        'здоровья', 'удачи', 'счастья', 'приключений', 'радости', 'терпенья', 'силы', 'бодрости', 'вдохновения'
+        'здоровья', 'удачи', 'счастья', 'радости', 'успехов', 'благополучия', 'вдохновения'
     ];
     const nextWish = pickCycle(wishes, random(0, wishes.length-1));
     const HEIGHT = 9;
@@ -412,8 +414,8 @@
         el.innerHTML = text;
         el.style.top = `${y}px`;
         el.style.left = `${x}px`;
+        el.onanimationend = () => document.body.removeChild(el);
         document.body.appendChild(el);
-        setTimeout(() => document.body.removeChild(el), 1200);
     }
 
     async function light() {
