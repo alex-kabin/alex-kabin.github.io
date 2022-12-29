@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,18 +13,20 @@
     <!-- MDB -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.0.1/mdb.min.css" rel="stylesheet" />
 
-
-
     <style>
-        body {
-            margin: 0;
-            padding: 0.1rem;
-            width: 100%;
+        html {
             height: 100vh;
+        }
+        body {
+            position: fixed;
+            margin: 0;
+            padding: 0.2rem 0.1rem 0 0.1rem;
+            width: 100%;
+            height: 100%;
             background: #333333;
             display: flex;
             flex-direction: column;
-            justify-content: start;
+            justify-content: center;
             align-items: center;
             /*gap: 0.4rem;*/
             overflow: hidden;
@@ -127,27 +129,27 @@
 
         .ball-1 {
             color: #fff200;
-            text-shadow: 0 0 35px #fff200;
+            /*text-shadow: 0 0 35px #fff200;*/
         }
         .ball-2 {
             color: #ff0044;
-            text-shadow: 0 0 35px #ff0044;
+            /*text-shadow: 0 0 35px #ff0044;*/
         }
         .ball-3 {
             color: #00B2FF;
-            text-shadow: 0 0 35px #00B2FF;
+            /*text-shadow: 0 0 35px #00B2FF;*/
         }
         .ball-4 {
             color: #DD00FF;
-            text-shadow: 0 0 35px #DD00FF;
+            /*text-shadow: 0 0 35px #DD00FF;*/
         }
         .ball-5 {
             color: #00ff15;
-            text-shadow: 0 0 35px #00ff15;
+            /*text-shadow: 0 0 35px #00ff15;*/
         }
         .ball-6 {
             color: #ffffff;
-            text-shadow: 0 0 35px #ffffff;
+            /*text-shadow: 0 0 35px #ffffff;*/
         }
 
         .wish {
@@ -355,9 +357,9 @@
     async function light() {
         document.getElementById('control').classList.toggle('d-none', true);
         await delay(800);
-        lightStar();
-        await delay(800);
         lightTree();
+        await delay(800);
+        lightStar();
         await delay(800);
         lightBalls();
         await delay(300);
